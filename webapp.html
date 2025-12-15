@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="webapp.css" />
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">₹</div>
+                <div class="brand-text">
+                    <h1>TrackX</h1>
+                    <p>Smart Expense Analytics</p>
+                </div>
+            </div>
+
+            <nav class="nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="history">
+                    <span class="icon">📜</span>
+                    <span>History</span>
+                </button>
+                <button class="nav-item" data-view="settings">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="summary-card">
+                <h3>Monthly Budget</h3>
+                <p class="summary-label">Limit</p>
+                <p class="summary-value" id="budget-limit">₹ 30,000</p>
+                <p class="summary-label">Used</p>
+                <p class="summary-value used" id="budget-used">₹ 0</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="budget-progress"></div>
+                </div>
+                <p class="summary-status" id="budget-status">You’re on track.</p>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <div>
+                    <h2>Dashboard</h2>
+                    <p id="current-date"></p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
+                    <button id="export-json" class="primary-btn">Export Data</button>
+                </div>
+            </header>
+
+            <!-- Content area -->
+            <section class="content" id="view-dashboard">
+                <div class="grid-2">
+                    <!-- Add expense card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Add Expense</h3>
+                            <p>Log a new transaction</p>
+                        </div>
+                        <form id="expense-form" class="form">
+                            <div class="form-group">
+                                <label for="amount">Amount (₹)</label>
+                                <input type="number" id="amount" min="1" step="0.01" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" required>
+                                    <option value="">Select category</option>
+                                    <option>Food</option>
+                                    <option>Transport</option>
+                                    <option>Bills</option>
+                                    <option>Shopping</option>
+                                    <option>Entertainment</option>
+                                    <option>Health</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="note">Note (optional)</label>
+                                <input type="text" id="note" maxlength="80" />
+                            </div>
+                            <button type="submit" class="primary-btn full-width">
+                                + Add Expense
+                            </button>
+                            <p class="form-message" id="form-message"></p>
+                        </form>
+                    </div>
+
+                    <!-- KPIs card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Overview</h3>
+                            <p>High level spending metrics</p>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi">
+                                <p class="kpi-label">Total Spent (This Month)</p>
+                                <p class="kpi-value" id="kpi-total">₹ 0</p>
+                            </div>
+                            <div class="kpi">
+                                <p class="kpi-label">Highest Category</p>
+                                <p class="kpi-value" id="kpi-top-category">—</p>
+                            </div>
+                            <div class="kpi">
+                                <p class="kpi-label">Average Spend / Day</p>
+                                <p class="kpi-value" id="kpi-avg">₹ 0</p>
+                            </div>
+                            <div class="header-actions">
+                                <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
+                                <button id="export-json" class="primary-btn">Export JSON</button>
+                                <button id="export-csv" class="primary-btn">Export CSV</button>
+                                <input type="file" id="import-csv" accept=".csv" style="display: none;" />
+                                <button id="import-csv-btn" class="primary-btn">Import CSV</button>
+                            </div>
+                            <div class="kpi">
+                                <p class="kpi-label">Total Transactions</p>
+                                <p class="kpi-value" id="kpi-count">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Table + Filters -->
+                <div class="card">
+                    <div class="card-header row">
+                        <div>
+                            <h3>Recent Transactions</h3>
+                            <p>Filter and manage your expenses</p>
+                        </div>
+                        <div class="filters">
+                            <select id="filter-category">
+                                <option value="">All categories</option>
+                                <option>Food</option>
+                                <option>Transport</option>
+                                <option>Bills</option>
+                                <option>Shopping</option>
+                                <option>Entertainment</option>
+                                <option>Health</option>
+                                <option>Other</option>
+                            </select>
+                            <input type="month" id="filter-month" />
+                            <button id="clear-filters" class="secondary-btn">Reset</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Note</th>
+                                    <th class="align-right">Amount (₹)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expense-table-body">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                        <p class="empty-state" id="empty-state">No expenses yet. Start by adding one.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History view -->
+            <section class="content hidden" id="view-history">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>History & Analytics</h3>
+                        <p>Monthly summary across all data</p>
+                    </div>
+                    <div class="history-grid">
+                        <div>
+                            <h4>Monthly Summary</h4>
+                            <ul class="history-list" id="history-summary"></ul>
+                        </div>
+                        <div>
+                            <h4>Category-wise Split (Current Month)</h4>
+                            <ul class="history-list" id="history-category"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings view -->
+            <section class="content hidden" id="view-settings">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Settings</h3>
+                        <p>Customize your experience</p>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="form-group">
+                            <label for="setting-budget">Monthly Budget (₹)</label>
+                            <input type="number" id="setting-budget" min="0" />
+                            <button id="save-budget" class="primary-btn small-btn">
+                                Save Budget
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <p>Use the moon icon in the header to toggle light/dark mode.</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Persistence</label>
+                            <p>
+                                This demo stores data in your browser (localStorage).
+                                For a real system, connect to a backend database.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="filters">
+                        <input type="text" id="search-bar" placeholder="Search by note or category" />
+                        <select id="filter-category">
+                            <option value="">All Categories</option>
+                            <!-- Categories dynamically populated -->
+                        </select>
+                        <input type="month" id="filter-month" />
+                        <button id="clear-filters" class="secondary-btn">Reset</button>
+                    </div>
+                    <div class="pagination">
+                        <button id="prev-page" class="secondary-btn">Previous</button>
+                        <span id="page-info">Page 1</span>
+                        <button id="next-page" class="secondary-btn">Next</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="webapp.js"></script>
+</body>
+</html>
